@@ -90,11 +90,18 @@ export function TerminalMode({ open, onClose }: { open: boolean; onClose: () => 
   const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
+  // Reset the screen when opened — adjusted during render (React's
+  // documented pattern for reacting to a value change) rather than in an
+  // effect.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setLines(BANNER.map((t) => ({ kind: "sys" as const, text: t })));
+  }
+
+  // Focusing the input is a genuine external-system side effect.
   useEffect(() => {
-    if (open) {
-      setLines(BANNER.map((t) => ({ kind: "sys" as const, text: t })));
-      requestAnimationFrame(() => inputRef.current?.focus());
-    }
+    if (open) requestAnimationFrame(() => inputRef.current?.focus());
   }, [open]);
 
   useEffect(() => {

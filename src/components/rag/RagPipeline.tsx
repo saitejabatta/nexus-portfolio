@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Boxes,
@@ -43,10 +43,14 @@ export function RagPipeline({ pipeline }: { pipeline: PipelineRun }) {
   const running = status === "running";
   const [expanded, setExpanded] = useState(true);
 
-  // Auto-collapse to the summary once the run finishes.
-  useEffect(() => {
+  // Auto-collapse to the summary once the run finishes — adjusted during
+  // render (React's documented pattern for reacting to a value change)
+  // rather than in an effect.
+  const [prevStatus, setPrevStatus] = useState(status);
+  if (status !== prevStatus) {
+    setPrevStatus(status);
     if (status === "done") setExpanded(false);
-  }, [status]);
+  }
 
   const stageStatus = (id: StageId) =>
     stages.find((s) => s.id === id)?.status ?? "pending";

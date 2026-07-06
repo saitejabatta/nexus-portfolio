@@ -32,7 +32,10 @@ const LABELS: Record<AnalyticsEvent, string> = {
 export default function AnalyticsPage() {
   const [events, setEvents] = useState<TrackedEvent[]>([]);
 
+  // Deferred to an effect: localStorage is browser-only, so reading it during
+  // render would produce a server/client hydration mismatch.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time post-mount load, see comment above
     setEvents(getLocalEvents());
   }, []);
 

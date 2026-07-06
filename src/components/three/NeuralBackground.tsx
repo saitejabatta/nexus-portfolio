@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -8,45 +8,46 @@ const NODE_COUNT = 90;
 const LINK_DISTANCE = 3.2;
 const SPREAD = 14;
 
-/** Build a random node cloud and the edges between nearby nodes (once). */
-function useNeuralGeometry() {
-  return useMemo(() => {
-    const positions = new Float32Array(NODE_COUNT * 3);
-    const nodes: THREE.Vector3[] = [];
+/**
+ * Build a random node cloud and the edges between nearby nodes.
+ * Computed once at module load (not inside a component/hook), so this
+ * genuinely-random generation never runs during render.
+ */
+function buildNeuralGeometry() {
+  const positions = new Float32Array(NODE_COUNT * 3);
+  const nodes: THREE.Vector3[] = [];
 
-    for (let i = 0; i < NODE_COUNT; i++) {
-      const v = new THREE.Vector3(
-        (Math.random() - 0.5) * SPREAD,
-        (Math.random() - 0.5) * SPREAD * 0.7,
-        (Math.random() - 0.5) * SPREAD * 0.5,
-      );
-      nodes.push(v);
-      positions.set([v.x, v.y, v.z], i * 3);
-    }
+  for (let i = 0; i < NODE_COUNT; i++) {
+    const v = new THREE.Vector3(
+      (Math.random() - 0.5) * SPREAD,
+      (Math.random() - 0.5) * SPREAD * 0.7,
+      (Math.random() - 0.5) * SPREAD * 0.5,
+    );
+    nodes.push(v);
+    positions.set([v.x, v.y, v.z], i * 3);
+  }
 
-    const linePoints: number[] = [];
-    for (let i = 0; i < NODE_COUNT; i++) {
-      for (let j = i + 1; j < NODE_COUNT; j++) {
-        if (nodes[i].distanceTo(nodes[j]) < LINK_DISTANCE) {
-          linePoints.push(
-            nodes[i].x, nodes[i].y, nodes[i].z,
-            nodes[j].x, nodes[j].y, nodes[j].z,
-          );
-        }
+  const linePoints: number[] = [];
+  for (let i = 0; i < NODE_COUNT; i++) {
+    for (let j = i + 1; j < NODE_COUNT; j++) {
+      if (nodes[i].distanceTo(nodes[j]) < LINK_DISTANCE) {
+        linePoints.push(
+          nodes[i].x, nodes[i].y, nodes[i].z,
+          nodes[j].x, nodes[j].y, nodes[j].z,
+        );
       }
     }
+  }
 
-    return {
-      positions,
-      lines: new Float32Array(linePoints),
-    };
-  }, []);
+  return { positions, lines: new Float32Array(linePoints) };
 }
+
+const NEURAL_GEOMETRY = buildNeuralGeometry();
 
 function Network() {
   const group = useRef<THREE.Group>(null);
   const lineMat = useRef<THREE.LineBasicMaterial>(null);
-  const { positions, lines } = useNeuralGeometry();
+  const { positions, lines } = NEURAL_GEOMETRY;
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;

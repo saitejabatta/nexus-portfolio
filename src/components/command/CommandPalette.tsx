@@ -119,17 +119,30 @@ export function CommandPalette({ open, onClose }: Props) {
     return commands.filter((c) => c.label.toLowerCase().includes(q));
   }, [commands, query]);
 
-  // Reset state when opened, focus input
-  useEffect(() => {
+  // Reset query/active when opened — adjusted during render (React's documented
+  // pattern for "reset state when a value changes") rather than in an effect,
+  // so it applies before the reopened dialog ever paints.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setQuery("");
       setActive(0);
-      requestAnimationFrame(() => inputRef.current?.focus());
     }
+  }
+
+  // Focusing the input is a genuine external-system side effect, so it stays
+  // in an effect — it just doesn't call setState.
+  useEffect(() => {
+    if (open) requestAnimationFrame(() => inputRef.current?.focus());
   }, [open]);
 
-  // Keep active index in range
-  useEffect(() => setActive(0), [query]);
+  // Keep active index in range as the query changes (same render-phase pattern).
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setActive(0);
+  }
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") return onClose();

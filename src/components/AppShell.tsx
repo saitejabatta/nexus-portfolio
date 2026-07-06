@@ -29,13 +29,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [constellationOpen, setConstellationOpen] = useState(false);
 
   // Decide whether to run the boot sequence (once per browser session).
+  // Deliberately deferred to an effect: sessionStorage is browser-only, so
+  // reading it during render would produce a server/client hydration mismatch.
   useEffect(() => {
     const alreadyBooted = sessionStorage.getItem(BOOT_KEY) === "1";
+    /* eslint-disable react-hooks/set-state-in-effect --
+       one-time post-mount flag synced from a browser-only API; see comment above. */
     if (alreadyBooted) {
       setReady(true);
     } else {
       setBooting(true);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Keyboard shortcuts: ⌘K palette, ` terminal.
