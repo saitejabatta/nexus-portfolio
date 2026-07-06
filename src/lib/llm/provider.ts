@@ -32,7 +32,7 @@ async function* geminiStream(
   const genai = await import("@google/generative-ai");
   const client = new genai.GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = client.getGenerativeModel({
-    model: process.env.GEMINI_MODEL || "gemini-1.5-flash",
+    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
     systemInstruction:
       getPortfolio().profile.systemPrompt ??
       "You are NEXUS, an AI portfolio agent. Answer grounded in the provided context. Be concise, technical, and honest about uncertainty.",
