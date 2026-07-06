@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dialogPop, overlayFade } from "@/lib/design/motion";
+import { getPortfolio } from "@/lib/data/repository";
 
 export type Command = {
   id: string;
@@ -65,7 +66,7 @@ export function CommandPalette({ open, onClose }: Props) {
         hint: "external",
         icon: GitBranch,
         group: "Actions",
-        run: () => window.open("https://github.com", "_blank"),
+        run: () => window.open(getPortfolio().profile.socials.github, "_blank"),
       },
       {
         id: "linkedin",
@@ -73,7 +74,7 @@ export function CommandPalette({ open, onClose }: Props) {
         hint: "external",
         icon: Link2,
         group: "Actions",
-        run: () => window.open("https://linkedin.com", "_blank"),
+        run: () => window.open(getPortfolio().profile.socials.linkedin, "_blank"),
       },
       {
         id: "resume",

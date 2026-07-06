@@ -18,7 +18,7 @@ export const SEED: PortfolioData = {
     location: "India", // TODO: confirm
     socials: {
       github: "https://github.com/saitejabatta",
-      linkedin: "https://linkedin.com/in/", // TODO: real profile URL
+      linkedin: "https://www.linkedin.com/in/sai-teja-batta/",
       email: "battasaiteja25@gmail.com",
     },
     systemPrompt:
