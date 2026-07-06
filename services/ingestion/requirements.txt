@@ -1,0 +1,12 @@
+# Core API
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+pydantic==2.*
+
+# Fetchers (optional features; core pipeline runs without these)
+httpx==0.27.*               # GitHub API
+pdfplumber==0.11.*          # resume PDF parsing
+
+# Embeddings + storage (optional; offline stubs used when absent)
+google-generativeai==0.8.*  # Gemini text-embedding-004
+supabase==2.*               # pgvector storage

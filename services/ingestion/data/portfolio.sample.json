@@ -1,0 +1,69 @@
+{
+  "profile": {
+    "name": "Sai Teja",
+    "headline": "AI Engineer · RAG & Full-Stack",
+    "bio": "I build production RAG systems, agentic pipelines, and full-stack AI apps where retrieval, orchestration, and clean UX come together.",
+    "location": "India"
+  },
+  "projects": [
+    {
+      "slug": "nexus-portfolio",
+      "title": "NEXUS — AI Portfolio",
+      "summary": "A portfolio you talk to. Streams a live RAG pipeline visualization while answering as me.",
+      "descriptionMd": "An interactive portfolio built as an AI system: visitors chat with a RAG agent and watch the retrieval pipeline (embed -> vector search -> rerank -> grounded generation) animate in real time.",
+      "techStack": ["Next.js", "TypeScript", "Supabase", "pgvector", "Gemini", "Three.js"],
+      "category": "ai",
+      "status": "wip",
+      "challengesMd": "Making the RAG visualization honest - every animated stage maps to a real backend event rather than a cosmetic loop.",
+      "learningsMd": "Designing a streaming SSE pipeline whose stages double as a UI event stream; tying answer confidence to retrieval quality.",
+      "features": ["Live RAG pipeline visualizer", "Streaming chat with citations + confidence", "3D neural background, command palette, boot sequence"]
+    },
+    {
+      "slug": "ai-meeting-assistant",
+      "title": "AI Meeting Assistant",
+      "summary": "Real-time meeting copilot across Teams, Meet & Zoom - transcription, summaries, and action items.",
+      "descriptionMd": "A managed-bot meeting assistant that joins calls on all three major platforms, transcribes in real time, and produces summaries and action items.",
+      "techStack": ["Python", "FastAPI", "LLMs", "WebSockets", "Speech-to-Text"],
+      "category": "ai",
+      "status": "wip",
+      "challengesMd": "Unifying a single bot API across three platforms with different join/media models.",
+      "learningsMd": "Real-time audio pipelines, streaming transcription, and platform bot integrations.",
+      "features": ["Multi-platform join", "Live transcription", "Summaries & action items"]
+    },
+    {
+      "slug": "enterprise-docintel",
+      "title": "Enterprise Document Intelligence",
+      "summary": "Upload -> OCR -> auto-classification -> semantic search over enterprise documents.",
+      "descriptionMd": "A document intelligence platform that ingests files, runs OCR, classifies document types, and enables semantic search across the corpus.",
+      "techStack": ["Python", "FastAPI", "OCR", "Vector Search", "React"],
+      "category": "ai",
+      "status": "wip",
+      "challengesMd": "Reliable OCR + classification across messy real-world document layouts.",
+      "learningsMd": "Document ingestion pipelines, OCR post-processing, and classification under noisy input.",
+      "features": ["OCR ingestion", "Automatic classification", "Semantic search"]
+    }
+  ],
+  "skills": [
+    { "name": "Retrieval-Augmented Generation", "category": "AI / RAG" },
+    { "name": "Embeddings & Vector Search", "category": "AI / RAG" },
+    { "name": "Prompt & Context Engineering", "category": "AI / RAG" },
+    { "name": "Python", "category": "Backend" },
+    { "name": "FastAPI", "category": "Backend" },
+    { "name": "PostgreSQL / pgvector", "category": "Backend" },
+    { "name": "TypeScript", "category": "Frontend" },
+    { "name": "React / Next.js", "category": "Frontend" },
+    { "name": "Tailwind CSS", "category": "Frontend" },
+    { "name": "Docker", "category": "Infra" },
+    { "name": "Supabase", "category": "Infra" },
+    { "name": "CI/CD", "category": "Infra" }
+  ],
+  "experience": [
+    {
+      "org": "Independent / Project work",
+      "role": "AI Engineer",
+      "type": "job",
+      "summaryMd": "Shipping applied AI systems end to end - retrieval pipelines, agents, and full-stack AI apps - with a focus on evals, latency, and trustworthy output.",
+      "highlights": ["Built multiple production-style RAG systems", "Designed honest pipelines with confidence + citations"]
+    }
+  ]
+}
