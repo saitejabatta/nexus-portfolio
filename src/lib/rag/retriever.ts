@@ -1,6 +1,6 @@
 import type { Retrieval } from "@/lib/chat/types";
 import { mockRetrieval } from "@/lib/chat/mockEngine";
-import { getPortfolio } from "@/lib/data/repository";
+import { loadPortfolio } from "@/lib/data/repository";
 
 /**
  * Retrieval layer. Returns the retrieval metadata (for the visualization) plus
@@ -24,9 +24,9 @@ const isOnline = () =>
       process.env.GEMINI_API_KEY,
   );
 
-/** Build a grounded context string from the seed (offline path). */
-function offlineContext(): string {
-  const { profile, projects, skills, experience } = getPortfolio();
+/** Build a grounded context string from live portfolio data (offline retrieval path). */
+async function offlineContext(): Promise<string> {
+  const { profile, projects, skills, experience } = await loadPortfolio();
   const parts = [
     `# Profile\n${profile.name} — ${profile.headline}\n${profile.bio}`,
     `# Projects\n${projects
@@ -103,5 +103,5 @@ export async function retrieve(query: string): Promise<RetrievalResult> {
       // fall through to offline on any backend error
     }
   }
-  return { retrieval: mockRetrieval(query), context: offlineContext() };
+  return { retrieval: await mockRetrieval(query), context: await offlineContext() };
 }

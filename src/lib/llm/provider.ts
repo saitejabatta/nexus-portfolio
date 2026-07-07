@@ -1,5 +1,5 @@
 import { generateMockAnswer } from "@/lib/chat/mockEngine";
-import { getPortfolio } from "@/lib/data/repository";
+import { loadPortfolio } from "@/lib/data/repository";
 
 /**
  * Generation adapter. One interface, swappable backends:
@@ -30,11 +30,12 @@ async function* geminiStream(
   context: string,
 ): AsyncIterable<string> {
   const genai = await import("@google/generative-ai");
+  const { profile } = await loadPortfolio();
   const client = new genai.GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = client.getGenerativeModel({
     model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
     systemInstruction:
-      getPortfolio().profile.systemPrompt ??
+      profile.systemPrompt ??
       "You are NEXUS, an AI portfolio agent. Answer grounded in the provided context. Be concise, technical, and honest about uncertainty.",
   });
 
@@ -52,10 +53,10 @@ export async function generate(
 ): Promise<GenerationResult> {
   if (hasGemini()) {
     // Follow-ups are still seed-derived for now (cheap + reliable).
-    const { followups } = generateMockAnswer(query);
+    const { followups } = await generateMockAnswer(query);
     return { tokens: geminiStream(query, context), followups: followups ?? [] };
   }
 
-  const { content, followups } = generateMockAnswer(query);
+  const { content, followups } = await generateMockAnswer(query);
   return { tokens: fromArray(tokenize(content)), followups: followups ?? [] };
 }

@@ -4,24 +4,37 @@ import type {
   Retrieval,
   RetrievalHit,
 } from "./types";
-import { SEED } from "@/lib/data/seed";
-import {
-  getEnabledProjects,
-  getSkillsByCategory,
-} from "@/lib/data/repository";
-import type { Project, ProjectCategory } from "@/lib/data/types";
+import { loadPortfolio } from "@/lib/data/repository";
+import type { PortfolioData, Project, ProjectCategory } from "@/lib/data/types";
 
 /**
- * Mock RAG engine — keyword-routed answers, now generated from the SEED content
- * (lib/data) so editing your projects/skills updates the chat automatically.
- * Phase 6 replaces `generateMockAnswer` with a real /api/chat call; the return
- * shape (markdown + follow-ups) stays identical so the UI never changes.
+ * Mock/offline RAG engine — keyword-routed answers generated from live
+ * portfolio data (Supabase when configured, SEED otherwise via
+ * loadPortfolio()). This is the deterministic fallback the real Gemini
+ * generation path (lib/llm/provider.ts) uses when no API key is set; the
+ * return shape (markdown + follow-ups) is what the UI always renders.
  */
 
+function enabledProjects(data: PortfolioData): Project[] {
+  return data.projects.filter((p) => p.enabled).sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+function skillsByCategory(data: PortfolioData): Record<string, PortfolioData["skills"]> {
+  const out: Record<string, PortfolioData["skills"]> = {};
+  for (const s of data.skills) {
+    if (!s.enabled) continue;
+    (out[s.category] ??= []).push(s);
+  }
+  return out;
+}
+
 /** Parse a natural filter out of the query (category / status / complexity). */
-function filterProjects(query: string): { projects: Project[]; label: string } {
+function filterProjects(
+  data: PortfolioData,
+  query: string,
+): { projects: Project[]; label: string } {
   const q = query.toLowerCase();
-  let projects = getEnabledProjects();
+  let projects = enabledProjects(data);
   let label = "projects";
 
   const cat: [RegExp, ProjectCategory, string][] = [
@@ -49,8 +62,8 @@ function filterProjects(query: string): { projects: Project[]; label: string } {
   return { projects, label };
 }
 
-function buildProjectsAnswer(query: string): MockAnswer {
-  const { projects, label } = filterProjects(query);
+function buildProjectsAnswer(data: PortfolioData, query: string): MockAnswer {
+  const { projects, label } = filterProjects(data, query);
   if (projects.length === 0) {
     return {
       content: `I don't have any **${label}** in my knowledge base yet. Try *"show all projects"* or ask about my skills.`,
@@ -73,8 +86,8 @@ function buildProjectsAnswer(query: string): MockAnswer {
   };
 }
 
-function buildSkillsAnswer(): MockAnswer {
-  const groups = getSkillsByCategory();
+function buildSkillsAnswer(data: PortfolioData): MockAnswer {
+  const groups = skillsByCategory(data);
   const lines = Object.entries(groups)
     .map(([cat, skills]) => `- **${cat}** — ${skills.map((s) => s.name).join(", ")}`)
     .join("\n");
@@ -96,9 +109,9 @@ def retrieve(query: str, k: int = 5) -> list[Chunk]:
   };
 }
 
-function buildWhoAnswer(): MockAnswer {
-  const { profile } = SEED;
-  const top = getEnabledProjects()
+function buildWhoAnswer(data: PortfolioData): MockAnswer {
+  const { profile } = data;
+  const top = enabledProjects(data)
     .slice(0, 2)
     .map((p) => `**${p.title}**`)
     .join(" and ");
@@ -114,7 +127,7 @@ Recent builds include ${top}.
   };
 }
 
-type Rule = { match: RegExp; answer: () => MockAnswer };
+type Rule = { match: RegExp; answer: (data: PortfolioData) => MockAnswer };
 
 /** Matches intent to connect/hire/collaborate — routed to lead capture + booking. */
 const CONNECT_INTENT =
@@ -129,22 +142,22 @@ const RULES: Rule[] = [
     }),
   },
   { match: /who are you|about you|yourself|introduce/i, answer: buildWhoAnswer },
-  { match: /project|built|portfolio|show.*work|production|hardest|complex/i, answer: () => buildProjectsAnswer("") },
+  { match: /project|built|portfolio|show.*work|production|hardest|complex/i, answer: (d) => buildProjectsAnswer(d, "") },
   { match: /skill|tech|stack|language|know|good at/i, answer: buildSkillsAnswer },
   {
     match: /intern|experience|job|work history/i,
-    answer: () => ({
-      content: SEED.experience
+    answer: (data) => ({
+      content: data.experience
         .map((e) => `**${e.role}** · ${e.org}\n${e.summaryMd ?? ""}`)
         .join("\n\n") +
-        "\n\n*(Detailed timeline becomes a generated component once my resume is ingested in Phase 5.)*",
+        "\n\n*(Detailed timeline shown below.)*",
       followups: ["What are your strongest skills?", "Show all your AI projects"],
     }),
   },
   {
     match: /hard|difficult|challeng/i,
-    answer: () => {
-      const hardest = [...getEnabledProjects()].sort((a, b) => b.complexity - a.complexity)[0];
+    answer: (data) => {
+      const hardest = [...enabledProjects(data)].sort((a, b) => b.complexity - a.complexity)[0];
       return {
         content: `The hardest was **${hardest.title}**.
 
@@ -170,19 +183,17 @@ Basically: making AI systems that are *measurably* good, not just demo-good.`,
   },
   {
     match: /resume|cv|download/i,
-    answer: () => ({
-      content: `📄 My résumé becomes a **downloadable PDF + an inline preview card** once it's uploaded through the admin panel (Phase 8) and ingested (Phase 5).
-
-For now, ask me anything about my projects or skills and I'll answer directly.`,
+    answer: (data) => ({
+      content: data.profile.resumeUrl
+        ? `📄 Here's my résumé — download it below.`
+        : `📄 My résumé hasn't been uploaded yet. Ask me anything about my projects or skills in the meantime.`,
       followups: ["Show all your AI projects", "What are your strongest skills?"],
     }),
   },
   {
     match: /github|repo|code|source/i,
     answer: () => ({
-      content: `🔗 My **GitHub** holds the source for these projects. *"Open GitHub"* (also in the ⌘K palette) links straight to my profile, and each project answer carries a repo preview card.
-
-Repository analysis + README understanding get wired in during the ingestion phase.`,
+      content: `🔗 My **GitHub** holds the source for these projects. *"Open GitHub"* (also in the ⌘K palette) links straight to my profile, and each project answer carries a repo preview card.`,
       followups: ["Show all your AI projects", "What are your strongest skills?"],
     }),
   },
@@ -195,20 +206,21 @@ Try one of these to see me in action:`,
   followups: ["Who are you?", "Show all your AI projects", "What are your strongest skills?"],
 };
 
-export function generateMockAnswer(query: string): MockAnswer {
+export async function generateMockAnswer(query: string): Promise<MockAnswer> {
+  const data = await loadPortfolio();
   // Project queries get the smart filter (category/status/complexity).
   if (/project|built|portfolio|show.*work|production-ready/i.test(query)) {
-    return buildProjectsAnswer(query);
+    return buildProjectsAnswer(data, query);
   }
   const rule = RULES.find((r) => r.match.test(query));
-  return rule ? rule.answer() : FALLBACK;
+  return rule ? rule.answer(data) : FALLBACK;
 }
 
 /* ── Tool resolution: which rich components to render with the answer ───────
    Mirrors how a tool-calling agent would return structured UI payloads. */
 
-function buildRepoCards() {
-  return getEnabledProjects().map((p) => ({
+function buildRepoCards(data: PortfolioData) {
+  return enabledProjects(data).map((p) => ({
     name: p.slug,
     description: p.summary,
     language: p.techStack[0],
@@ -217,24 +229,24 @@ function buildRepoCards() {
   }));
 }
 
-function buildResumeCard() {
-  const { profile, experience } = SEED;
+function buildResumeCard(data: PortfolioData) {
+  const { profile, experience } = data;
   return {
     name: profile.name,
     headline: profile.headline,
     highlights: experience.flatMap((e) => e.highlights).slice(0, 4),
-    downloadUrl: undefined, // wired once a résumé PDF is uploaded (Phase 8)
+    downloadUrl: profile.resumeUrl || undefined,
   };
 }
 
-function buildTimeline() {
-  const exp = SEED.experience.map((e) => ({
+function buildTimeline(data: PortfolioData) {
+  const exp = data.experience.map((e) => ({
     title: e.role,
     subtitle: e.org,
     period: [e.startDate, e.endDate].filter(Boolean).join(" – ") || "Ongoing",
     detail: e.summaryMd,
   }));
-  const projectMilestones = getEnabledProjects().map((p) => ({
+  const projectMilestones = enabledProjects(data).map((p) => ({
     title: p.title,
     subtitle: "Project",
     period: p.status === "production" ? "Shipped" : "In progress",
@@ -243,46 +255,37 @@ function buildTimeline() {
   return [...exp, ...projectMilestones];
 }
 
-export function resolveComponents(query: string): MessageComponent[] {
+export async function resolveComponents(query: string): Promise<MessageComponent[]> {
+  const data = await loadPortfolio();
   const q = query.toLowerCase();
 
   if (CONNECT_INTENT.test(query)) {
-    const calLink = SEED.profile.socials.cal ?? "";
+    const calLink = data.profile.socials.cal ?? "";
     return [
       { kind: "lead_capture", query },
       { kind: "booking", calLink },
     ];
   }
   if (/resume|cv|download/.test(q)) {
-    return [{ kind: "resume", resume: buildResumeCard() }];
+    return [{ kind: "resume", resume: buildResumeCard(data) }];
   }
   if (/intern|experience|timeline|work history|career|journey/.test(q)) {
-    return [{ kind: "timeline", items: buildTimeline() }];
+    return [{ kind: "timeline", items: buildTimeline(data) }];
   }
   if (/github|repo|repositor|source code/.test(q)) {
-    return [{ kind: "repos", repos: buildRepoCards() }];
+    return [{ kind: "repos", repos: buildRepoCards(data) }];
   }
   if (/project|built|portfolio|show.*work|production|hardest|complex|\bai\b|\bweb\b/.test(q)) {
-    const { projects } = filterProjects(query);
+    const { projects } = filterProjects(data, query);
     if (projects.length) return [{ kind: "projects", projects }];
   }
   return [];
 }
 
 /* ── Mock retrieval (drives the RAG visualization) ─────────────────────────
-   Replaced in Phase 6 by real pipeline events streamed over SSE. The numbers
-   here are deterministic per-query so the same question looks consistent. */
-
-const SOURCE_POOL: { source: string; kind: RetrievalHit["kind"] }[] = [
-  ...getEnabledProjects().map((p) => ({
-    source: `README · ${p.slug}`,
-    kind: "repo" as const,
-  })),
-  { source: "resume.pdf · experience", kind: "resume" },
-  { source: "resume.pdf · skills", kind: "resume" },
-  { source: "skill · retrieval-augmented-generation", kind: "skill" },
-  { source: "skill · fastapi", kind: "skill" },
-];
+   Replaced by real pgvector search once retrieval is wired to Supabase; the
+   numbers here are deterministic per-query so the same question looks
+   consistent, and now reflect live project/skill data. */
 
 /** Cheap deterministic hash so a given query yields stable mock scores. */
 function seededRand(seed: number) {
@@ -297,11 +300,23 @@ function hashString(str: string) {
   return Math.abs(h);
 }
 
-export function mockRetrieval(query: string): Retrieval {
+export async function mockRetrieval(query: string): Promise<Retrieval> {
+  const data = await loadPortfolio();
+  const sourcePool: { source: string; kind: RetrievalHit["kind"] }[] = [
+    ...enabledProjects(data).map((p) => ({
+      source: `README · ${p.slug}`,
+      kind: "repo" as const,
+    })),
+    { source: "resume.pdf · experience", kind: "resume" },
+    { source: "resume.pdf · skills", kind: "resume" },
+    { source: "skill · retrieval-augmented-generation", kind: "skill" },
+    { source: "skill · fastapi", kind: "skill" },
+  ];
+
   const rand = seededRand(hashString(query) + 7);
   const candidates = 18 + Math.floor(rand() * 22);
 
-  const shuffled = [...SOURCE_POOL].sort(() => rand() - 0.5).slice(0, 5);
+  const shuffled = [...sourcePool].sort(() => rand() - 0.5).slice(0, 5);
   let score = 0.78 + rand() * 0.16;
   const hits: RetrievalHit[] = shuffled.map((s) => {
     const hit = { ...s, score: Math.round(score * 100) / 100 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Database, FileText, GitBranch, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,14 +10,6 @@ import { useChat } from "@/lib/chat/ChatProvider";
 import { getKnowledgeStats } from "@/lib/data/repository";
 import { track } from "@/lib/analytics";
 import { Composer } from "./Composer";
-
-const stats = getKnowledgeStats();
-const KB = [
-  { icon: GitBranch, label: "Projects", value: `${stats.repositories} indexed`, tone: "text-cyan" },
-  { icon: FileText, label: "Resume", value: "ready", tone: "text-blue" },
-  { icon: Database, label: "Vector store", value: "pgvector", tone: "text-purple" },
-  { icon: Sparkles, label: "Skills", value: `${stats.skills} nodes`, tone: "text-cyan" },
-] as const;
 
 const SUGGESTED = [
   "Who are you?",
@@ -28,6 +21,36 @@ const SUGGESTED = [
 
 export function EmptyState() {
   const { send } = useChat();
+  const [stats, setStats] = useState(getKnowledgeStats());
+
+  // Refresh from the live source (Supabase-backed once configured) — the
+  // seed-based value above paints instantly, this corrects it moments later.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/portfolio")
+      .then((r) => r.json())
+      .then((data: { projects: { enabled: boolean }[]; skills: { enabled: boolean }[]; experience: unknown[] }) => {
+        if (cancelled) return;
+        setStats({
+          repositories: data.projects.filter((p) => p.enabled).length,
+          skills: data.skills.filter((s) => s.enabled).length,
+          experience: data.experience.length,
+        });
+      })
+      .catch(() => {
+        /* stay on the seed-based fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const KB = [
+    { icon: GitBranch, label: "Projects", value: `${stats.repositories} indexed`, tone: "text-cyan" },
+    { icon: FileText, label: "Resume", value: "ready", tone: "text-blue" },
+    { icon: Database, label: "Vector store", value: "pgvector", tone: "text-purple" },
+    { icon: Sparkles, label: "Skills", value: `${stats.skills} nodes`, tone: "text-cyan" },
+  ] as const;
 
   return (
     <section className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-24">

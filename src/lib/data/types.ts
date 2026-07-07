@@ -13,6 +13,7 @@ export type Profile = {
     cal?: string; // Cal.com booking link, e.g. https://cal.com/username
   };
   systemPrompt?: string;
+  resumeUrl?: string;
 };
 
 export type ProjectStatus = "production" | "wip" | "hackathon" | "archived";

@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   Activity,
-  ArrowLeft,
   MessageSquare,
   MousePointerClick,
   Trash2,
@@ -63,20 +61,14 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <main className="relative mx-auto min-h-dvh max-w-4xl px-6 py-10">
+    <main className="relative mx-auto max-w-4xl px-6 py-10">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <Link
-            href="/"
-            className="mb-2 inline-flex items-center gap-1.5 font-mono text-[11px] text-text-muted hover:text-cyan"
-          >
-            <ArrowLeft className="h-3 w-3" /> back to NEXUS
-          </Link>
           <h1 className="font-display text-2xl font-semibold text-text">
             Analytics
           </h1>
           <p className="font-mono text-[11px] text-text-faint">
-            privacy-first · local session view · admin auth lands in Phase 8
+            privacy-first · local session view
           </p>
         </div>
         <button

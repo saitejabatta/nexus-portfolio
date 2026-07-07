@@ -47,7 +47,7 @@ export async function* orchestrate(query: string): AsyncGenerator<RagEvent> {
 
     // Linking sources surfaces the rich tool-call components (cards/timelines).
     yield { type: "stage", stage: "sources", status: "active" };
-    for (const component of resolveComponents(query)) {
+    for (const component of await resolveComponents(query)) {
       yield { type: "component", component };
     }
     await sleep(DWELL.sources ?? 0);

@@ -110,13 +110,13 @@ export function CommandPalette({ open, onClose }: Props) {
         run: () => window.dispatchEvent(new CustomEvent("nexus:open-share")),
       },
       {
-        id: "analytics",
-        label: "View analytics",
-        hint: "admin",
+        id: "admin",
+        label: "Admin dashboard",
+        hint: "owner",
         icon: BarChart3,
         group: "Actions",
         run: () => {
-          window.location.href = "/admin/analytics";
+          window.location.href = "/admin";
         },
       },
     ],
