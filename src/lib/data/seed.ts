@@ -34,7 +34,7 @@ export const SEED: PortfolioData = {
         "A portfolio you talk to. Streams a live RAG pipeline visualization while answering as me.",
       descriptionMd:
         "An interactive portfolio built as an AI system: visitors chat with a RAG agent and watch the retrieval pipeline (embed → vector search → rerank → grounded generation) animate in real time.",
-      liveUrl: "https://nexus-pi-ochre.vercel.app",
+      liveUrl: "https://battasaiteja.dev",
       repoUrl: "https://github.com/saitejabatta/nexus-portfolio",
       techStack: ["Next.js", "TypeScript", "Supabase", "pgvector", "Gemini", "Three.js"],
       category: "ai",

@@ -3,7 +3,7 @@ import { getPortfolio } from "@/lib/data/repository";
 /** Canonical site URL. Set NEXT_PUBLIC_SITE_URL in production (Vercel domain). */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://nexus-pi-ochre.vercel.app"; // TODO: swap to a custom domain when purchased
+  "https://battasaiteja.dev";
 
 /** JSON-LD Person + WebSite structured data for rich search results. */
 export function personJsonLd() {
