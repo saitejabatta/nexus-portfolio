@@ -5,6 +5,8 @@ import { ProjectCard } from "./ProjectCard";
 import { RepoPreview } from "./RepoPreview";
 import { ResumePreview } from "./ResumePreview";
 import { Timeline } from "./Timeline";
+import { LeadCaptureForm } from "./LeadCaptureForm";
+import { BookingCard } from "./BookingCard";
 
 /** Renders the rich tool-call payloads attached to an assistant answer. */
 export function MessageComponents({
@@ -38,6 +40,10 @@ export function MessageComponents({
             return <ResumePreview key={i} resume={c.resume} />;
           case "timeline":
             return <Timeline key={i} items={c.items} />;
+          case "lead_capture":
+            return <LeadCaptureForm key={i} query={c.query} />;
+          case "booking":
+            return <BookingCard key={i} calLink={c.calLink} />;
           default:
             return null;
         }

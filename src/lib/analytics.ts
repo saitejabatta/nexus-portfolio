@@ -15,6 +15,9 @@ export type AnalyticsEvent =
   | "terminal_opened"
   | "constellation_opened"
   | "palette_opened"
+  | "share_opened"
+  | "lead_captured"
+  | "booking_clicked"
   | "conversation_cleared";
 
 export type TrackedEvent = {

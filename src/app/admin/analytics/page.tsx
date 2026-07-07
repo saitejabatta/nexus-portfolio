@@ -26,6 +26,9 @@ const LABELS: Record<AnalyticsEvent, string> = {
   terminal_opened: "Terminal opened",
   constellation_opened: "Constellation opened",
   palette_opened: "Palette opened",
+  share_opened: "Share opened",
+  lead_captured: "Leads captured",
+  booking_clicked: "Booking clicked",
   conversation_cleared: "Chats cleared",
 };
 

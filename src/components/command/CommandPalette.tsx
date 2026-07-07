@@ -9,6 +9,7 @@ import {
   GitBranch,
   Link2,
   MessageSquare,
+  QrCode,
   Search,
   Sparkles,
   Terminal,
@@ -99,6 +100,14 @@ export function CommandPalette({ open, onClose }: Props) {
         icon: Terminal,
         group: "Actions",
         run: () => window.dispatchEvent(new CustomEvent("nexus:open-terminal")),
+      },
+      {
+        id: "share",
+        label: "Share NEXUS (QR code)",
+        hint: "share",
+        icon: QrCode,
+        group: "Actions",
+        run: () => window.dispatchEvent(new CustomEvent("nexus:open-share")),
       },
       {
         id: "analytics",

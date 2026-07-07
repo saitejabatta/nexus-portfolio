@@ -116,7 +116,18 @@ Recent builds include ${top}.
 
 type Rule = { match: RegExp; answer: () => MockAnswer };
 
+/** Matches intent to connect/hire/collaborate — routed to lead capture + booking. */
+const CONNECT_INTENT =
+  /\b(hir(e|ing)|recruit(er|ing)|job opportunity|open to work|work together|collaborat|reach out|get in touch|contact you|connect|let'?s talk|schedule a call|book a call|interview)\b/i;
+
 const RULES: Rule[] = [
+  {
+    match: CONNECT_INTENT,
+    answer: () => ({
+      content: `I'd love that. Leave your details below and Sai Teja will follow up directly — or grab a slot on his calendar if you'd rather talk right away.`,
+      followups: ["Show all your AI projects", "What are your strongest skills?"],
+    }),
+  },
   { match: /who are you|about you|yourself|introduce/i, answer: buildWhoAnswer },
   { match: /project|built|portfolio|show.*work|production|hardest|complex/i, answer: () => buildProjectsAnswer("") },
   { match: /skill|tech|stack|language|know|good at/i, answer: buildSkillsAnswer },
@@ -235,6 +246,13 @@ function buildTimeline() {
 export function resolveComponents(query: string): MessageComponent[] {
   const q = query.toLowerCase();
 
+  if (CONNECT_INTENT.test(query)) {
+    const calLink = SEED.profile.socials.cal ?? "";
+    return [
+      { kind: "lead_capture", query },
+      { kind: "booking", calLink },
+    ];
+  }
   if (/resume|cv|download/.test(q)) {
     return [{ kind: "resume", resume: buildResumeCard() }];
   }

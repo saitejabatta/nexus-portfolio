@@ -8,6 +8,7 @@ import { CommandPalette } from "@/components/command/CommandPalette";
 import { StatusBar } from "@/components/ui/StatusBar";
 import { SkillConstellation } from "@/components/wow/SkillConstellation";
 import { TerminalMode } from "@/components/wow/TerminalMode";
+import { ShareCard } from "@/components/wow/ShareCard";
 import { track } from "@/lib/analytics";
 
 // 3D background is client-only (no SSR) and lazy so it never blocks first paint.
@@ -27,6 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [constellationOpen, setConstellationOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Decide whether to run the boot sequence (once per browser session).
   // Deliberately deferred to an effect: sessionStorage is browser-only, so
@@ -74,11 +76,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       track("constellation_opened");
       setConstellationOpen(true);
     };
+    const openShare = () => {
+      track("share_opened");
+      setShareOpen(true);
+    };
     window.addEventListener("nexus:open-terminal", openTerminal);
     window.addEventListener("nexus:open-constellation", openConstellation);
+    window.addEventListener("nexus:open-share", openShare);
     return () => {
       window.removeEventListener("nexus:open-terminal", openTerminal);
       window.removeEventListener("nexus:open-constellation", openConstellation);
+      window.removeEventListener("nexus:open-share", openShare);
     };
   }, []);
 
@@ -126,6 +134,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         open={constellationOpen}
         onClose={() => setConstellationOpen(false)}
       />
+      <ShareCard open={shareOpen} onClose={() => setShareOpen(false)} />
     </>
   );
 }

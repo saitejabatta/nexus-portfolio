@@ -5,7 +5,13 @@ export type Profile = {
   headline: string;
   bio: string;
   location?: string;
-  socials: { github?: string; linkedin?: string; email?: string; website?: string };
+  socials: {
+    github?: string;
+    linkedin?: string;
+    email?: string;
+    website?: string;
+    cal?: string; // Cal.com booking link, e.g. https://cal.com/username
+  };
   systemPrompt?: string;
 };
 

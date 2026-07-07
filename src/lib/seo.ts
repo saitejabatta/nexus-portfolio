@@ -3,11 +3,12 @@ import { getPortfolio } from "@/lib/data/repository";
 /** Canonical site URL. Set NEXT_PUBLIC_SITE_URL in production (Vercel domain). */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://nexus-portfolio.vercel.app"; // TODO: real domain
+  "https://nexus-pi-ochre.vercel.app"; // TODO: swap to a custom domain when purchased
 
 /** JSON-LD Person + WebSite structured data for rich search results. */
 export function personJsonLd() {
   const { profile, skills } = getPortfolio();
+  const { github, linkedin, website } = profile.socials;
   return {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -16,7 +17,7 @@ export function personJsonLd() {
     jobTitle: profile.headline,
     url: SITE_URL,
     knowsAbout: skills.map((s) => s.name),
-    sameAs: Object.values(profile.socials).filter(Boolean),
+    sameAs: [github, linkedin, website].filter(Boolean),
     email: profile.socials.email,
   };
 }

@@ -28,7 +28,9 @@ export type MessageComponent =
   | { kind: "projects"; projects: Project[] }
   | { kind: "repos"; repos: RepoCard[] }
   | { kind: "resume"; resume: ResumeCard }
-  | { kind: "timeline"; items: TimelineItem[] };
+  | { kind: "timeline"; items: TimelineItem[] }
+  | { kind: "lead_capture"; query: string }
+  | { kind: "booking"; calLink: string };
 
 /** The stages of the RAG pipeline, in execution order. */
 export type StageId =

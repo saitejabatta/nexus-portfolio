@@ -23,6 +23,7 @@ const SUGGESTED = [
   "Show AI projects",
   "Strongest skills?",
   "Tell me about your internships",
+  "I'd like to connect",
 ];
 
 export function EmptyState() {

@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SITE_URL, personJsonLd } from "@/lib/seo";
 import { ServiceWorkerRegister } from "@/components/system/ServiceWorkerRegister";
+import { PostHogProvider } from "@/components/system/PostHogProvider";
 
 const display = Space_Grotesk({
   variable: "--font-display",
@@ -98,6 +101,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd()) }}
         />
         <ServiceWorkerRegister />
+        <PostHogProvider />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

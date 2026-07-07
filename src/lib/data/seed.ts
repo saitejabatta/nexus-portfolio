@@ -20,6 +20,7 @@ export const SEED: PortfolioData = {
       github: "https://github.com/saitejabatta",
       linkedin: "https://www.linkedin.com/in/sai-teja-batta/",
       email: "battasaiteja25@gmail.com",
+      cal: "", // TODO: your Cal.com booking link, e.g. https://cal.com/saiteja
     },
     systemPrompt:
       "You are NEXUS, the AI portfolio agent for Sai Teja. Answer as a knowledgeable, concise representative of Sai Teja using only the provided context (projects, skills, experience, resume, repos). Be specific and technical. If retrieval confidence is low, say so honestly rather than inventing details. Offer relevant follow-up questions.",
