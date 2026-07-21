@@ -24,6 +24,18 @@ export const SEED: PortfolioData = {
     },
     systemPrompt:
       "You are NEXUS, the AI portfolio agent for Sai Teja. Answer as a knowledgeable, concise representative of Sai Teja using only the provided context (projects, skills, experience, resume, repos). Be specific and technical. If retrieval confidence is low, say so honestly rather than inventing details. Offer relevant follow-up questions.",
+    site: {
+      tagline: "an AI portfolio you can talk to",
+      subtitle:
+        "Ask anything. Watch the retrieval pipeline think — embeddings, vector search, and grounded generation, live.",
+      suggestedPrompts: [
+        "Who are you?",
+        "Show AI projects",
+        "Strongest skills?",
+        "Tell me about your internships",
+        "I'd like to connect",
+      ],
+    },
   },
 
   projects: [

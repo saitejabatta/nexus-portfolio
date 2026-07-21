@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BarChart3, Folder, Sparkles, User } from "lucide-react";
+import { BarChart3, Briefcase, Folder, Sparkles, User } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const CARDS = [
   { href: "/admin/projects", label: "Projects", icon: Folder, desc: "Add, edit, delete, and toggle visibility" },
   { href: "/admin/skills", label: "Skills", icon: Sparkles, desc: "Manage your skill graph and categories" },
-  { href: "/admin/profile", label: "Profile & résumé", icon: User, desc: "Bio, socials, system prompt, résumé PDF" },
+  { href: "/admin/experience", label: "Experience", icon: Briefcase, desc: "Work history, internships, and research" },
+  { href: "/admin/profile", label: "Profile & résumé", icon: User, desc: "Bio, socials, site text, system prompt, résumé upload" },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3, desc: "Visitor engagement and top questions" },
 ] as const;
 

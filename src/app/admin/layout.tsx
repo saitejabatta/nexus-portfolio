@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
+  Briefcase,
   FileText,
   Folder,
   LayoutDashboard,
@@ -19,6 +20,7 @@ const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/projects", label: "Projects", icon: Folder },
   { href: "/admin/skills", label: "Skills", icon: Sparkles },
+  { href: "/admin/experience", label: "Experience", icon: Briefcase },
   { href: "/admin/profile", label: "Profile & résumé", icon: User },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ] as const;

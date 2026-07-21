@@ -7,35 +7,32 @@ import { cn } from "@/lib/utils";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { fadeRise, stagger } from "@/lib/design/motion";
 import { useChat } from "@/lib/chat/ChatProvider";
-import { getKnowledgeStats } from "@/lib/data/repository";
+import { getKnowledgeStats, getPortfolio } from "@/lib/data/repository";
+import type { PortfolioData } from "@/lib/data/types";
 import { track } from "@/lib/analytics";
 import { Composer } from "./Composer";
 
-const SUGGESTED = [
-  "Who are you?",
-  "Show AI projects",
-  "Strongest skills?",
-  "Tell me about your internships",
-  "I'd like to connect",
-];
+const SEED_SITE = getPortfolio().profile.site;
 
 export function EmptyState() {
   const { send } = useChat();
   const [stats, setStats] = useState(getKnowledgeStats());
+  const [site, setSite] = useState(SEED_SITE);
 
   // Refresh from the live source (Supabase-backed once configured) — the
-  // seed-based value above paints instantly, this corrects it moments later.
+  // seed-based values above paint instantly, this corrects them moments later.
   useEffect(() => {
     let cancelled = false;
     fetch("/api/portfolio")
       .then((r) => r.json())
-      .then((data: { projects: { enabled: boolean }[]; skills: { enabled: boolean }[]; experience: unknown[] }) => {
+      .then((data: PortfolioData) => {
         if (cancelled) return;
         setStats({
           repositories: data.projects.filter((p) => p.enabled).length,
           skills: data.skills.filter((s) => s.enabled).length,
           experience: data.experience.length,
         });
+        if (data.profile.site) setSite({ ...SEED_SITE, ...data.profile.site });
       })
       .catch(() => {
         /* stay on the seed-based fallback */
@@ -52,6 +49,10 @@ export function EmptyState() {
     { icon: Sparkles, label: "Skills", value: `${stats.skills} nodes`, tone: "text-cyan" },
   ] as const;
 
+  const prompts = site?.suggestedPrompts?.length
+    ? site.suggestedPrompts
+    : SEED_SITE?.suggestedPrompts ?? [];
+
   return (
     <section className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-24">
       <motion.div
@@ -64,7 +65,7 @@ export function EmptyState() {
           variants={fadeRise}
           className="mb-4 font-mono text-xs uppercase tracking-[0.4em] text-cyan/80"
         >
-          an AI portfolio you can talk to
+          {site?.tagline ?? "an AI portfolio you can talk to"}
         </motion.p>
 
         <motion.h1
@@ -78,8 +79,8 @@ export function EmptyState() {
           variants={fadeRise}
           className="mx-auto mt-4 max-w-md text-balance text-text-muted"
         >
-          Ask anything. Watch the retrieval pipeline think — embeddings, vector
-          search, and grounded generation, live.
+          {site?.subtitle ??
+            "Ask anything. Watch the retrieval pipeline think — embeddings, vector search, and grounded generation, live."}
         </motion.p>
 
         <motion.div
@@ -101,7 +102,7 @@ export function EmptyState() {
           variants={fadeRise}
           className="mt-8 flex flex-wrap items-center justify-center gap-2"
         >
-          {SUGGESTED.map((p) => (
+          {prompts.map((p) => (
             <button
               key={p}
               onClick={() => {
@@ -118,7 +119,7 @@ export function EmptyState() {
         <motion.div variants={fadeRise} className="mx-auto mt-5 max-w-xl">
           <Composer />
           <p className="mt-3 font-mono text-[11px] uppercase tracking-widest text-text-faint">
-            phase 2 · chat online · mock knowledge base
+            live · grounded in real portfolio data
           </p>
         </motion.div>
       </motion.div>

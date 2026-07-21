@@ -14,6 +14,12 @@ export type Profile = {
   };
   systemPrompt?: string;
   resumeUrl?: string;
+  /** Admin-editable site copy (hero text, suggested prompt chips). */
+  site?: {
+    tagline?: string;
+    subtitle?: string;
+    suggestedPrompts?: string[];
+  };
 };
 
 export type ProjectStatus = "production" | "wip" | "hackathon" | "archived";

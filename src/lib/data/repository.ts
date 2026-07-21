@@ -106,6 +106,7 @@ type ProfileRow = {
   socials: Record<string, string> | null;
   system_prompt: string | null;
   resume_url: string | null;
+  site: PortfolioData["profile"]["site"] | null;
 };
 
 function mapProject(r: ProjectRow): Project {
@@ -187,6 +188,7 @@ export async function loadPortfolio(): Promise<PortfolioData> {
         socials: (p.socials as PortfolioData["profile"]["socials"]) ?? {},
         systemPrompt: p.system_prompt ?? undefined,
         resumeUrl: p.resume_url ?? undefined,
+        site: p.site ?? undefined,
       },
       projects: ((projectsRes.data as ProjectRow[]) ?? []).map(mapProject),
       skills: ((skillsRes.data as SkillRow[]) ?? []).map(mapSkill),

@@ -5,6 +5,12 @@ import { CheckCircle2, FileUp, Loader2, Save } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
+type SiteContent = {
+  tagline?: string;
+  subtitle?: string;
+  suggestedPrompts?: string[];
+};
+
 type ProfileRow = {
   id: string;
   name: string;
@@ -14,13 +20,33 @@ type ProfileRow = {
   socials: { github?: string; linkedin?: string; email?: string; website?: string; cal?: string } | null;
   system_prompt: string | null;
   resume_url: string | null;
+  site: SiteContent | null;
 };
+
+/** Accepted résumé formats → stored extension + MIME type. */
+const RESUME_TYPES: Record<string, { ext: string; mime: string }> = {
+  "application/pdf": { ext: "pdf", mime: "application/pdf" },
+  "application/msword": { ext: "doc", mime: "application/msword" },
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+    ext: "docx",
+    mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  },
+};
+
+function resumeTypeFor(file: File) {
+  if (RESUME_TYPES[file.type]) return RESUME_TYPES[file.type];
+  // Some browsers report empty/odd MIME types — fall back to the extension.
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const match = Object.values(RESUME_TYPES).find((t) => t.ext === ext);
+  return match ?? null;
+}
 
 const inputCls =
   "w-full rounded-lg border border-line bg-white/[0.03] px-3 py-2 font-mono text-sm text-text placeholder:text-text-faint focus:border-cyan/50 focus:outline-none";
 
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [promptsInput, setPromptsInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -35,13 +61,24 @@ export default function AdminProfilePage() {
       .select("*")
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => setProfile(data as ProfileRow));
+      .then(({ data }) => {
+        const row = data as ProfileRow;
+        setProfile(row);
+        setPromptsInput((row?.site?.suggestedPrompts ?? []).join("\n"));
+      });
   }, [supabase]);
 
   const save = async () => {
     if (!supabase || !profile) return;
     setSaving(true);
     setError(null);
+    const site: SiteContent = {
+      ...(profile.site ?? {}),
+      suggestedPrompts: promptsInput
+        .split("\n")
+        .map((p) => p.trim())
+        .filter(Boolean),
+    };
     const { error: err } = await supabase
       .from("profile")
       .update({
@@ -51,26 +88,29 @@ export default function AdminProfilePage() {
         location: profile.location,
         socials: profile.socials,
         system_prompt: profile.system_prompt,
+        site,
       })
       .eq("id", profile.id);
     setSaving(false);
     if (err) return setError(err.message);
+    setProfile({ ...profile, site });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
   const uploadResume = async (file: File) => {
     if (!supabase || !profile) return;
-    if (file.type !== "application/pdf") {
-      setError("Please upload a PDF file.");
+    const type = resumeTypeFor(file);
+    if (!type) {
+      setError("Please upload a PDF, DOC, or DOCX file.");
       return;
     }
     setUploading(true);
     setError(null);
-    const path = `resume-${Date.now()}.pdf`;
+    const path = `resume-${Date.now()}.${type.ext}`;
     const { error: uploadErr } = await supabase.storage
       .from("resume")
-      .upload(path, file, { upsert: true, contentType: "application/pdf" });
+      .upload(path, file, { upsert: true, contentType: type.mime });
     if (uploadErr) {
       setUploading(false);
       return setError(uploadErr.message);
@@ -94,6 +134,7 @@ export default function AdminProfilePage() {
   }
 
   const socials = profile.socials ?? {};
+  const site = profile.site ?? {};
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
@@ -115,12 +156,12 @@ export default function AdminProfilePage() {
             <CheckCircle2 className="h-3.5 w-3.5" /> current résumé (view)
           </a>
         )}
-        <label className="flex cursor-pointer items-center gap-2 rounded-full border border-cyan/40 bg-cyan/10 px-4 py-2 font-mono text-xs text-cyan transition-colors hover:bg-cyan/20 w-fit">
+        <label className="flex w-fit cursor-pointer items-center gap-2 rounded-full border border-cyan/40 bg-cyan/10 px-4 py-2 font-mono text-xs text-cyan transition-colors hover:bg-cyan/20">
           {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileUp className="h-3.5 w-3.5" />}
-          {uploading ? "uploading…" : profile.resume_url ? "replace PDF" : "upload PDF"}
+          {uploading ? "uploading…" : profile.resume_url ? "replace file" : "upload file"}
           <input
             type="file"
-            accept="application/pdf"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -128,6 +169,41 @@ export default function AdminProfilePage() {
             }}
           />
         </label>
+        <p className="mt-2 font-mono text-[10px] text-text-faint">
+          PDF, DOC, or DOCX
+        </p>
+      </section>
+
+      <section className="mb-6 rounded-xl border border-line bg-bg-elevated/50 p-4">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-widest text-cyan">
+          site content
+        </p>
+        <div className="space-y-2.5">
+          <Field label="Hero tagline (small text above NEXUS)">
+            <input
+              value={site.tagline ?? ""}
+              onChange={(e) => setProfile({ ...profile, site: { ...site, tagline: e.target.value } })}
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Hero subtitle">
+            <textarea
+              rows={2}
+              value={site.subtitle ?? ""}
+              onChange={(e) => setProfile({ ...profile, site: { ...site, subtitle: e.target.value } })}
+              className={cn(inputCls, "resize-none")}
+            />
+          </Field>
+          <Field label="Suggested prompt chips (one per line)">
+            <textarea
+              rows={5}
+              value={promptsInput}
+              onChange={(e) => setPromptsInput(e.target.value)}
+              className={cn(inputCls, "resize-none")}
+              placeholder={"Who are you?\nShow AI projects"}
+            />
+          </Field>
+        </div>
       </section>
 
       <div className="space-y-2.5">
