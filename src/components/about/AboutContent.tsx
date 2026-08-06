@@ -1,10 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Cpu } from "lucide-react";
+import {
+  ArrowLeft,
+  Cpu,
+  FileText,
+  GitBranch,
+  Link2,
+  Mail,
+  MapPin,
+} from "lucide-react";
 import { fadeRise, stagger } from "@/lib/design/motion";
+import { getPortfolio } from "@/lib/data/repository";
+import type { Profile } from "@/lib/data/types";
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
 // Same 3D background the home page uses — client-only, lazy.
 const NeuralBackground = dynamic(
@@ -24,6 +43,27 @@ const STACK: [string, React.ReactNode][] = [
 ];
 
 export function AboutContent() {
+  // Seed gives an instant, SEO-visible first paint; the fetch reflects any
+  // live edits made in the admin panel. Same pattern as the home EmptyState.
+  const [profile, setProfile] = useState<Profile>(getPortfolio().profile);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/portfolio")
+      .then((r) => r.json())
+      .then((data: { profile?: Profile }) => {
+        if (!cancelled && data.profile) setProfile(data.profile);
+      })
+      .catch(() => {
+        /* keep the seed fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const s = profile.socials ?? {};
+
   return (
     <>
       {/* Background stack — matches the home shell */}
@@ -77,13 +117,89 @@ export function AboutContent() {
             variants={fadeRise}
             className="mt-4 max-w-[62ch] text-balance text-[15px] text-text-muted"
           >
-            This site isn&apos;t a static résumé — it&apos;s a live application. Here&apos;s
-            how a single question actually travels through it, and one design decision I&apos;m
-            proud of. If you like what you read, the chat can tell you the rest.
+            First, who&apos;s behind it — then how it actually works. This site isn&apos;t a
+            static résumé; it&apos;s a live application, and the chat can tell you the rest.
+          </motion.p>
+
+          {/* Personal intro — the "about me" the label promises */}
+          <motion.section variants={fadeRise} className="mt-10">
+            <div className="glass rounded-2xl p-6 sm:p-7">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-cyan/40 bg-cyan/10 font-display text-xl font-bold text-cyan text-glow-cyan">
+                  {initials(profile.name)}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="font-display text-2xl font-bold text-text">
+                    {profile.name}
+                  </h2>
+                  <p className="mt-0.5 font-mono text-[13px] text-cyan">
+                    {profile.headline}
+                  </p>
+                  <p className="mt-3 max-w-[60ch] text-[14.5px] leading-relaxed text-text-muted">
+                    {profile.bio}
+                  </p>
+
+                  <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                    {profile.location && (
+                      <span className="flex items-center gap-1.5 font-mono text-[11px] text-text-faint">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {profile.location}
+                      </span>
+                    )}
+                    {s.github && (
+                      <a
+                        href={s.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-mono text-[11px] text-text-muted transition-colors hover:border-cyan/50 hover:text-cyan"
+                      >
+                        <GitBranch className="h-3 w-3" /> GitHub
+                      </a>
+                    )}
+                    {s.linkedin && (
+                      <a
+                        href={s.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-mono text-[11px] text-text-muted transition-colors hover:border-cyan/50 hover:text-cyan"
+                      >
+                        <Link2 className="h-3 w-3" /> LinkedIn
+                      </a>
+                    )}
+                    {s.email && (
+                      <a
+                        href={`mailto:${s.email}`}
+                        className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-mono text-[11px] text-text-muted transition-colors hover:border-cyan/50 hover:text-cyan"
+                      >
+                        <Mail className="h-3 w-3" /> Email
+                      </a>
+                    )}
+                    {profile.resumeUrl && (
+                      <a
+                        href={profile.resumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 rounded-full border border-cyan/40 bg-cyan/10 px-3 py-1 font-mono text-[11px] text-cyan transition-colors hover:bg-cyan/20"
+                      >
+                        <FileText className="h-3 w-3" /> Résumé
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Transition into the technical deep-dive */}
+          <motion.p
+            variants={fadeRise}
+            className="mt-14 font-mono text-[11px] uppercase tracking-[0.28em] text-text-faint"
+          >
+            &darr; and here&apos;s how it works
           </motion.p>
 
           {/* Figure 1 — request lifecycle */}
-          <motion.section variants={fadeRise} className="mt-16">
+          <motion.section variants={fadeRise} className="mt-6">
             <div className="mb-2 flex items-baseline gap-3.5">
               <span className="font-display text-sm font-bold text-text-faint">01</span>
               <h2 className="font-display text-xl font-bold text-text">
