@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
+  BookOpen,
   Download,
   GitBranch,
   Link2,
@@ -100,6 +101,16 @@ export function CommandPalette({ open, onClose }: Props) {
         icon: Terminal,
         group: "Actions",
         run: () => window.dispatchEvent(new CustomEvent("nexus:open-terminal")),
+      },
+      {
+        id: "about",
+        label: "Learn about me",
+        hint: "how it works",
+        icon: BookOpen,
+        group: "Actions",
+        run: () => {
+          window.location.href = "/about";
+        },
       },
       {
         id: "share",

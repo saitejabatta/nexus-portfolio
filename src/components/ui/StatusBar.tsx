@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Cpu, Command } from "lucide-react";
 
 type StatusBarProps = {
@@ -20,8 +21,14 @@ export function StatusBar({ onOpenPalette }: StatusBarProps) {
         </span>
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="flex items-center gap-2 font-mono text-[11px] text-text-muted">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Link
+          href="/about"
+          className="font-mono text-[11px] tracking-wide text-text-muted transition-colors hover:text-cyan"
+        >
+          learn about me
+        </Link>
+        <span className="hidden items-center gap-2 font-mono text-[11px] text-text-muted sm:flex">
           <span className="pulse-dot inline-block h-2 w-2 rounded-full bg-cyan" />
           online
         </span>
