@@ -36,7 +36,7 @@ const STACK: [string, React.ReactNode][] = [
   ["Styling / motion", <>Tailwind CSS v4, Framer Motion, React Three Fiber</>],
   ["Transport", <>Server-Sent Events over a Vercel serverless function</>],
   ["Generation", <>Gemini 2.5 Flash <em className="text-text-muted">(streaming)</em>, swappable adapter</>],
-  ["Retrieval", <>Gemini text-embedding-004 → pgvector cosine search</>],
+  ["Retrieval", <>Gemini gemini-embedding-2 → pgvector cosine search (HNSW)</>],
   ["Database", <>Supabase Postgres, Row-Level Security, Auth, Storage</>],
   ["Ingestion", <>Standalone Python / FastAPI worker, idempotent chunk + embed</>],
   ["Deploy", <>Vercel + GitHub Actions CI, custom domain, PWA</>],
@@ -377,7 +377,7 @@ function LifecycleDiagram() {
       {/* retrieval */}
       <rect x="150" y="340" width="168" height="46" rx="7" fill="var(--color-bg-panel)" stroke="var(--color-cyan)" strokeOpacity="0.55" />
       <text x="234" y="359" textAnchor="middle" fontSize="11" fill="var(--color-text)">Gemini API</text>
-      <text x="234" y="374" textAnchor="middle" fontSize="9.5" fill="var(--color-text-muted)" fontFamily="var(--font-mono)">text-embedding-004</text>
+      <text x="234" y="374" textAnchor="middle" fontSize="9.5" fill="var(--color-text-muted)" fontFamily="var(--font-mono)">gemini-embedding-2</text>
 
       <line x1="318" y1="363" x2="335" y2="363" stroke="var(--color-cyan)" strokeWidth="1.4" markerEnd="url(#ab-a)" />
 
