@@ -200,9 +200,9 @@ Basically: making AI systems that are *measurably* good, not just demo-good.`,
 ];
 
 const FALLBACK: MockAnswer = {
-  content: `Good question. I'm running on a **seed knowledge base** right now — the real retrieval pipeline (embeddings → vector search → grounded generation) goes live in a later phase.
+  content: `Good question — I don't have a confident answer to that one from my portfolio data.
 
-Try one of these to see me in action:`,
+Try one of these instead:`,
   followups: ["Who are you?", "Show all your AI projects", "What are your strongest skills?"],
 };
 
